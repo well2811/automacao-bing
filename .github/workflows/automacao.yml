@@ -40,4 +40,5 @@ jobs:
           pip install selenium fake-useragent
 
       - name: Executar automação
-        run: python3 bot.py
+        run: python3 scheduler.py
+
