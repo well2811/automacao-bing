@@ -2,8 +2,8 @@ name: Automação Bing
 
 on:
   schedule:
-    - cron: "0 9 * * *"   # Executa todo dia às 09h (ajusto depois se quiser)
-  workflow_dispatch:       # Permite rodar manualmente
+    - cron: "0 9 * * *"
+  workflow_dispatch:
 
 jobs:
   run-automation:
@@ -13,16 +13,31 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      - name: Instalar dependências do sistema
+      - name: Instalar Google Chrome
         run: |
+          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo apt-get update
-          sudo apt-get install -y chromium-browser chromium-chromedriver
-          python3 -m pip install --upgrade pip
+          sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
+          google-chrome --version
+
+      - name: Instalar ChromeDriver compatível
+        run: |
+          CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
+          CHROME_MAJOR=$(echo $CHROME_VERSION | cut -d. -f1)
+          echo "Versão major do Chrome: $CHROME_MAJOR"
+          
+          DRIVER_VERSION=$(curl -s https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json | jq -r ".channels.Stable.version")
+          echo "Usando ChromeDriver versão: $DRIVER_VERSION"
+
+          wget https://storage.googleapis.com/chrome-for-testing-public/$DRIVER_VERSION/linux64/chromedriver-linux64.zip
+          unzip chromedriver-linux64.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/bin/chromedriver
+          sudo chmod +x /usr/bin/chromedriver
+          chromedriver --version
 
       - name: Instalar dependências Python
         run: |
-          pip install selenium fake-useragent undetected-chromedriver
+          pip install selenium fake-useragent
 
       - name: Executar automação
-        run: |
-          python3 bot.py
+        run: python3 bot.py
