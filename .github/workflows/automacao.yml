@@ -1,0 +1,28 @@
+name: Automação Bing
+
+on:
+  schedule:
+    - cron: "0 9 * * *"   # Executa todo dia às 09h (ajusto depois se quiser)
+  workflow_dispatch:       # Permite rodar manualmente
+
+jobs:
+  run-automation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Instalar dependências do sistema
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+          python3 -m pip install --upgrade pip
+
+      - name: Instalar dependências Python
+        run: |
+          pip install selenium fake-useragent undetected-chromedriver
+
+      - name: Executar automação
+        run: |
+          python3 bot.py
